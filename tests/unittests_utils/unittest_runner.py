@@ -1,6 +1,6 @@
 import sys
 from unittest import TextTestRunner
-from _tests.unittests_utils.unittest_loader import TestSuiteLoader
+from tests.unittests_utils.unittest_loader import TestSuiteLoader
 
 
 class AllTestsRunner(TestSuiteLoader):
