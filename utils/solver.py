@@ -1,39 +1,61 @@
-from utils.graph import Graph
-from utils.brute_force import BruteForce
+from utils.sudoku_puzzle import SudokuPuzzle
 import numpy as np
 
 
 class Solver:
 
-    def __init__(self, puzzle, sub_box_height=3, sub_box_width=3):
+    def __init__(self, puzzle):
         self._puzzle = puzzle
-        self._shape = self._puzzle.shape
-        self._settings = {"rows": self._puzzle.shape[0],
-                          "columns": self._puzzle.shape[1],
-                          "sub_box_height": sub_box_height,
-                          "sub_box_width": sub_box_width,
-                          "possible_cell_values": [i + 1 for i in range(self._puzzle.shape[0])]}
-        self._graph = Graph(self._settings)
-        self._set_starting_values()
-
-    def _set_starting_values(self):
-        self._graph.init_values(self._puzzle)
-
-    def _quick_parse(self):
-        self._graph.alert_all()
-
-    def _brute_force(self):
-        self._graph = BruteForce(self._graph).force()
+        self._sudoku = None
+        self._solutions = list()
 
     def solve(self):
-        if self._is_solved():
-            return self._graph.get_values()
-        self._quick_parse()
-        if self._is_solved():
-            return self._graph.get_values()
-        self._brute_force()
-        if self._is_solved():
-            return self._graph.get_values()
+        try:
+            solution = self._solve_process()
+            if -1 not in solution:
+                return solution
+        except ValueError:
+            pass
+        return np.full(self._puzzle.shape, -1)
 
-    def _is_solved(self):
-        return self._graph.is_solved() or self._graph.is_impossible()
+    def _solve_process(self):
+        self._init_puzzle()
+        self._sudoku.update_all()
+
+        if self._sudoku.is_solved():
+            return self._sudoku.get_values()
+
+        return self._depth_first_algo()
+
+    def _sub_solve_process(self, move):
+        try:
+            self._sudoku.update_unknowns()
+            self._take_move(move)
+            if self._sudoku.is_solved():
+                return self._sudoku.get_values()
+            return self._depth_first_algo()
+
+        except ValueError:
+            return {-1}
+
+    def _init_puzzle(self):
+        self._sudoku = SudokuPuzzle(puzzle=self._puzzle)
+
+    def _take_move(self, move):
+        self._sudoku.set_value(index=move["index"],
+                               value=move["value"])
+
+    def _good_moves(self):
+        lowest_empty = self._sudoku.lowest_empty_cell()["distance"]
+        for move in self._sudoku.get_all_possible_moves():
+            if lowest_empty >= move["distance"]:
+                yield move
+
+    def _depth_first_algo(self):
+        for move in self._good_moves():
+            sub_solver = Solver(self._sudoku.get_values().copy())
+            sub_solver._sudoku = self._sudoku.copy()
+            solution = sub_solver._sub_solve_process(move=move)
+            if -1 not in solution:
+                return solution
+        return {-1}

@@ -21,10 +21,13 @@ class PerformanceTest:
         self._hard_solutions = np.load("data/hard_solution.npy")
 
     def solve_all(self):
+        self.solve_all_minus_hard()
+        self.time_solve(self.solve_hard)
+
+    def solve_all_minus_hard(self):
         self.time_solve(self.solve_very_easy)
         self.time_solve(self.solve_easy)
         self.time_solve(self.solve_medium)
-        self.time_solve(self.solve_hard)
 
     def solve_one_hard(self, choice=0):
         solver = Solver(self._hard[choice])
@@ -86,6 +89,14 @@ class PerformanceTest:
 
 
 if __name__ == '__main__':
+    import cProfile
+    import pstats
+
     pt = PerformanceTest()
-    pt.solve_one_hard(1)
+
+    profile = cProfile.Profile()
+    profile.runcall(pt.solve_all)
+    ps = pstats.Stats(profile)
+    ps.print_stats()
+
 

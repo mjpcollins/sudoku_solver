@@ -1,45 +1,59 @@
 from unittest import TestCase
-from utils import Vertex
+from utils import Vertex, Graph
 
 
 class TestVertex(TestCase):
 
     def setUp(self):
-        self.vertex = Vertex([1, 2, 3])
-        self.neighbour_vertex = Vertex([1, 3, 7])
-        self.other_neighbour_vertex = Vertex([1, 5, 9])
-        self.solved_vertex = Vertex([1])
-        self.solved_vertex_2 = Vertex([2])
+        self.graph = Graph(4, init=False)
+        self.graph.vertexes = {
+            (0, 0): Vertex({1, 2, 3}, (0, 0), self.graph),
+            (0, 1): Vertex({1, 3, 7}, (0, 1), self.graph),
+            (1, 0): Vertex({1, 5, 9}, (1, 0), self.graph),
+            (0, 2): Vertex({1}, (0, 2), self.graph),
+            (1, 1): Vertex({2}, (1, 1), self.graph)
+        }
+
+        self.vertex = self.graph.vertexes[(0, 0)]
+        self.solved_vertex = self.graph.vertexes[(1, 1)]
+        self.solved_vertex_2 = self.graph.vertexes[(0, 2)]
+        self.neighbour_vertex = self.graph.vertexes[(0, 1)]
+        self.other_neighbour_vertex = self.graph.vertexes[(1, 0)]
 
     def test_init(self):
         self.assertEqual({1, 2, 3}, self.vertex._possible_values)
-        self.assertEqual(set(), self.vertex._neighbours)
+        self.assertEqual(set(), self.vertex.neighbours)
         self.assertEqual(False, self.vertex._solved)
-        self.assertEqual(True, self.solved_vertex._solved)
+        self.assertEqual(True, self.graph.vertexes[(1, 1)]._solved)
 
     def test_rule_out(self):
         self.assertEqual({1, 2, 3}, self.vertex._possible_values)
-        self.vertex.rule_out({2})
+        self.vertex._rule_out(2)
         self.assertEqual({1, 3}, self.vertex._possible_values)
 
-    def test_set_neighbour(self):
-        self.assertEqual(set(), self.vertex._neighbours)
-        self.vertex.set_neighbour(self.neighbour_vertex)
-        self.assertEqual({self.neighbour_vertex}, self.vertex._neighbours)
-        self.vertex.set_neighbour(self.other_neighbour_vertex)
-        self.assertEqual({self.neighbour_vertex, self.other_neighbour_vertex}, self.vertex._neighbours)
+    def test_set_neighbours_one_by_one(self):
+        self.vertex.add_neighbours({self.neighbour_vertex.id})
+        self.assertEqual({self.neighbour_vertex.id}, self.vertex.neighbours)
+        self.vertex.add_neighbours({self.other_neighbour_vertex.id})
+        self.assertEqual({self.neighbour_vertex.id, self.other_neighbour_vertex.id}, self.vertex.neighbours)
 
-    def test_set_solved_neighbour(self):
-        self.vertex.set_neighbour(self.solved_vertex)
+    def test_set_neighbours(self):
+        self.vertex.add_neighbours({self.neighbour_vertex.id,
+                                    self.other_neighbour_vertex.id})
+        self.assertEqual({self.neighbour_vertex.id,
+                          self.other_neighbour_vertex.id}, self.vertex.neighbours)
+
+    def test_set_solved_neighbours(self):
+        self.vertex.add_neighbours({self.solved_vertex_2.id})
         self.assertEqual({2, 3}, self.vertex._possible_values)
         self.assertEqual(False, self.vertex._solved)
-        self.vertex.set_neighbour(self.solved_vertex_2)
+        self.vertex.add_neighbours({self.solved_vertex.id})
         self.assertEqual({3}, self.vertex._possible_values)
         self.assertEqual(True, self.vertex._solved)
 
     def test_get_neighbours(self):
         self.assertEqual(set(), self.vertex.get_neighbours())
-        self.vertex._neighbours = {self.neighbour_vertex}
+        self.vertex.neighbours = {self.neighbour_vertex}
         self.assertEqual({self.neighbour_vertex}, self.vertex.get_neighbours())
 
     def test_check_solved(self):
@@ -51,19 +65,14 @@ class TestVertex(TestCase):
         self.assertEqual(False, self.vertex.is_solved())
         self.assertEqual(True, self.solved_vertex.is_solved())
 
-    def test_resolve_neighbour(self):
-        self.assertEqual({1, 2, 3}, self.vertex._possible_values)
-        self.vertex._resolve_neighbour(self.solved_vertex)
-        self.assertEqual({2, 3}, self.vertex._possible_values)
-
-    def test_get_values(self):
-        self.assertEqual({1, 2, 3}, self.vertex.get_values())
+    def test_get_possible_values(self):
+        self.assertEqual({1, 2, 3}, self.vertex.get_possible_values())
         self.vertex._possible_values = {1}
-        self.assertEqual({1}, self.vertex.get_values())
+        self.assertEqual({1}, self.vertex.get_possible_values())
 
     def test_resolve_neighbours(self):
-        self.vertex._neighbours.add(self.solved_vertex)
-        self.vertex._neighbours.add(self.solved_vertex_2)
+        self.vertex.neighbours.add(self.solved_vertex.id),
+        self.vertex.neighbours.add(self.solved_vertex_2.id)
         self.assertEqual({1, 2 ,3}, self.vertex._possible_values)
         self.assertEqual(False, self.vertex._solved)
         self.vertex.resolve_neighbours()
@@ -71,29 +80,24 @@ class TestVertex(TestCase):
         self.assertEqual(True, self.vertex._solved)
 
     def test_no_solutions(self):
-        self.vertex._possible_values = {1, 2}
-        self.vertex.set_neighbour(self.solved_vertex)
+        self.vertex._rule_out(value=3)
         with self.assertRaises(ValueError):
-            self.vertex.set_neighbour(self.solved_vertex_2)
+            self.vertex.add_neighbours({self.solved_vertex.id, self.solved_vertex_2.id})
 
-    def test_set_neighbours(self):
-        self.vertex.set_neighbours({self.neighbour_vertex, self.other_neighbour_vertex})
-        self.assertEqual({self.neighbour_vertex, self.other_neighbour_vertex}, self.vertex._neighbours)
-
-    def test_alert_neighbours(self):
-        self.vertex._neighbours = {self.neighbour_vertex, self.other_neighbour_vertex}
-        self.other_neighbour_vertex._neighbours = {self.neighbour_vertex, self.vertex}
-        self.neighbour_vertex._neighbours = {self.vertex, self.other_neighbour_vertex}
+    def test_update_neighbours(self):
+        self.vertex.add_neighbours({self.neighbour_vertex.id, self.other_neighbour_vertex.id})
+        self.other_neighbour_vertex.add_neighbours({self.neighbour_vertex.id, self.vertex.id})
+        self.neighbour_vertex.add_neighbours({self.vertex.id, self.other_neighbour_vertex.id})
         self.vertex._possible_values = {1}
-        self.vertex._solved = True
-        self.vertex.alert_neighbours()
+        self.vertex._check_solved()
+        self.vertex.update_neighbours()
         self.assertEqual({3, 7}, self.neighbour_vertex._possible_values)
         self.assertEqual({5, 9}, self.other_neighbour_vertex._possible_values)
 
     def test_alert_neighbours_after_solve(self):
-        self.vertex._neighbours = {self.neighbour_vertex, self.other_neighbour_vertex}
-        self.other_neighbour_vertex._neighbours = {self.neighbour_vertex, self.vertex}
-        self.neighbour_vertex._neighbours = {self.vertex, self.other_neighbour_vertex}
-        self.vertex.rule_out({2, 3})
+        self.vertex.neighbours = {self.neighbour_vertex.id, self.other_neighbour_vertex.id}
+        self.other_neighbour_vertex.neighbours = {self.neighbour_vertex.id, self.vertex.id}
+        self.neighbour_vertex.neighbours = {self.vertex.id, self.other_neighbour_vertex.id}
+        self.vertex.set_vertex_value(1)
         self.assertEqual({3, 7}, self.neighbour_vertex._possible_values)
         self.assertEqual({5, 9}, self.other_neighbour_vertex._possible_values)

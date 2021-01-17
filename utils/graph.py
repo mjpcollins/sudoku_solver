@@ -1,153 +1,85 @@
 import numpy as np
 from utils.vertex import Vertex
+import itertools
 
 
 class Graph:
 
-    def __init__(self, puzzle_settings_dict):
-        self._settings = puzzle_settings_dict
-        self._impossible = False
-        self._graph = GraphInitialiser(self._settings).create_graph()
+    def __init__(self, size, possible_values=None, init=True):
+        self._size = size
+        if not possible_values:
+            self._possible_cell_values = {i for i in range(1, self._size + 1)}
+        else:
+            self._possible_cell_values = set(possible_values)
+        self.vertexes = {}
+        if init:
+            self.create_graph()
 
-    def __str__(self):
-        return str(self.get_values())
-
-    def init_values(self, puzzle):
-        for index, value in np.ndenumerate(puzzle):
-            if value != 0:
-                self.quick_set_value(index, value)
-        return True
-
-    def quick_set_value(self, index, value):
-        self.set_value(index, value, alert_neighbours=False)
-
-    def set_value(self, index, value, alert_neighbours=True):
-        try:
-            self._graph[index[0]][index[1]].only_allow(values_set={value},
-                                                       alert_neighbours=alert_neighbours)
-        except ValueError:
-            self.no_solutions()
-            return False
-
-    def alert_all(self):
-        def alert(vertex):
-            vertex.alert_neighbours()
-        vectorized_alert = np.vectorize(alert)
-        try:
-            vectorized_alert(self._graph)
-        except ValueError:
-            self.no_solutions()
-
-    def no_solutions(self):
-        self._graph = GraphInitialiser(self._settings).create_graph(possible_cell_values={-1},
-                                                                    link_all=False)
-        self._impossible = True
-
-    def yield_possible_moves(self):
-        def get_values_from_vertex(vertex):
-            return vertex.get_values()
-        vectorized_possible_values = np.vectorize(get_values_from_vertex)
-        options_matrix = vectorized_possible_values(self._graph)
-        all_choices = []
-        for index, options in np.ndenumerate(options_matrix):
-            if len(options) > 1:
-                for choice in options:
-                    index_array = np.array(index)
-                    dist = index_array[0] + index_array[1] * self._graph.shape[1]
-                    all_choices.append({"index": index_array,
-                                        "value": choice,
-                                        "distance": dist})
-        all_choices.sort(key=lambda x: x["distance"])
-        for choice in all_choices:
-            yield choice
-
-    def lowest_empty_cell(self):
-        def get_known_value_from_vertex(vertex):
-            return vertex.get_known_value()
-        vectorized_known_values = np.vectorize(get_known_value_from_vertex)
-        known_values_matrix = vectorized_known_values(self._graph)
-        for index, value in enumerate(known_values_matrix.flat):
-            if value == 0:
-                return index
+    def create_graph(self):
+        for vertex_id in itertools.product(range(self._size), range(self._size)):
+            self.vertexes[vertex_id] = Vertex(self._possible_cell_values,
+                                              vertex_id=vertex_id,
+                                              graph=self)
+        self._link_all()
 
     def copy(self):
-        new_graph = Graph(self._settings.copy())
-        new_graph.init_values(self.get_values())
-        return new_graph
+        duplicate_graph = Graph(size=self._size,
+                                possible_values=self._possible_cell_values,
+                                init=False)
+        for vertex_index in self.vertexes:
+            duplicate_graph.vertexes[vertex_index] = self.vertexes[vertex_index].copy(duplicate_graph)
+        return duplicate_graph
 
-    def is_solved(self):
-        return not (0 in self.get_values())
+    def set_value(self, index, value):
+        self.vertexes[index].set_vertex_value(value=value)
 
-    def is_impossible(self):
-        return self._impossible
+    def quick_set_value(self, index, value):
+        self.vertexes[index].set_vertex_value(value=value,
+                                              update_neighbours=False)
 
-    def get_values(self):
-        def get_values_from_vertex(x):
-            return x.get_known_value()
-
-        vectorized_known_values = np.vectorize(get_values_from_vertex)
-        return vectorized_known_values(self._graph)
-
-    def get_possible_values(self):
-        def get_possible_values_from_vertex(x):
-            return x.get_values()
-
-        vectorized_possible_values = np.vectorize(get_possible_values_from_vertex)
-        return vectorized_possible_values(self._graph)
-
-    def fingerprint(self):
-        return hash(str(self._graph))
-
-
-class GraphInitialiser:
-
-    def __init__(self, puzzle_settings_dict):
-        self._settings = puzzle_settings_dict
-        self._rows = self._settings["rows"]
-        self._columns = self._settings["columns"]
-        self._sub_box_height = self._settings["sub_box_height"]
-        self._sub_box_width = self._settings["sub_box_width"]
-        self._possible_cell_values = self._settings["possible_cell_values"]
-        self._graph = None
-
-    def create_graph(self, possible_cell_values=None, link_all=True):
-        if not possible_cell_values:
-            possible_cell_values = self._possible_cell_values
-        self._graph = np.empty([self._rows, self._columns], dtype=object)
-        self._graph.flat = [Vertex(possible_cell_values) for _ in self._graph.flat]
-        if link_all:
-            self._link_all()
-        return self._graph
+    def update(self):
+        for vertexes in self.vertexes.values():
+            vertexes.resolve_neighbours()
 
     def _link_all(self):
-        self._link_rows()
-        self._link_columns()
+        self._link()
+        self._link(axis=1)
         self._link_sub_boxes()
 
-    def _link_rows(self):
-        for row in self._graph:
-            self._link_all_in_set(row)
-
-    def _link_columns(self):
-        for column in self._graph.T:
-            self._link_all_in_set(column)
+    def _link(self, axis=0):
+        for i in range(self._size):
+            vertex_row_set = set()
+            for j in range(self._size):
+                if axis == 0:
+                    vertex_row_set.add((i, j))
+                else:
+                    vertex_row_set.add((j, i))
+            self._link_all_in_set(vertex_row_set)
 
     def _link_sub_boxes(self):
-        for sub_box in split(self._graph, self._sub_box_height, self._sub_box_width):
-            self._link_all_in_set(sub_box.flatten())
+        box_size = int(np.sqrt(self._size))
+        boxes = {box_id: set() for box_id in itertools.product(range(box_size), range(box_size))}
+        for i in range(self._size):
+            for j in range(self._size):
+                boxes[(i // box_size, j // box_size)].add((i, j))
+        for box in boxes.values():
+            self._link_all_in_set(box)
 
-    @staticmethod
-    def _link_all_in_set(vertexes):
-        for vertex in vertexes:
-            temp_vertex_set = set(vertexes)
-            temp_vertex_set.remove(vertex)
-            vertex.set_neighbours(temp_vertex_set)
+    def _link_all_in_set(self, vertexes):
+        vertex_index_set = set(vertexes)
+        for vertex_index in vertexes:
+            vertex_index_set.remove(vertex_index)
+            self.vertexes[vertex_index].add_neighbours(vertex_index_set)
+            vertex_index_set.add(vertex_index)
 
 
-def split(array, nrows, ncols):
+def split(array, nrows):
     """Split a matrix into sub-matrices."""
     # TODO 2021-01-16: reference or rewrite
     r, h = array.shape
-    return (array.reshape(h//nrows, nrows, -1, ncols)
+    return (array.reshape(h//nrows, nrows, -1, nrows)
                  .swapaxes(1, 2)
-                 .reshape(-1, nrows, ncols))
+                 .reshape(-1, nrows, nrows))
+
+
+vectorized_update = np.vectorize(lambda x: x.update_neighbours())

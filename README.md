@@ -1,2 +1,2 @@
-# soduku_solver
-Solver of Soduku puzzles using a graph
+# sudoku_solver
+Solver of Sudoku puzzles using a graph
