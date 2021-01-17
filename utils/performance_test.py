@@ -7,83 +7,36 @@ from numpy.testing import assert_array_equal
 class PerformanceTest:
 
     def __init__(self):
-        self._puzzles_in_each_set = 15
-        self._v_easy = np.load("data/very_easy_puzzle.npy")
-        self._v_easy_solutions = np.load("data/very_easy_solution.npy")
-
-        self._easy = np.load("data/easy_puzzle.npy")
-        self._easy_solutions = np.load("data/easy_solution.npy")
-
-        self._medium = np.load("data/medium_puzzle.npy")
-        self._medium_solutions = np.load("data/medium_solution.npy")
-
-        self._hard = np.load("data/hard_puzzle.npy")
-        self._hard_solutions = np.load("data/hard_solution.npy")
+        self.puzzles = {"very_easy": {"puzzles": np.load("data/very_easy_puzzle.npy"),
+                                      "solutions": np.load("data/very_easy_solution.npy")},
+                        "easy": {"puzzles": np.load("data/easy_puzzle.npy"),
+                                 "solutions": np.load("data/easy_solution.npy")},
+                        "medium": {"puzzles": np.load("data/medium_puzzle.npy"),
+                                   "solutions": np.load("data/medium_solution.npy")},
+                        "hard": {"puzzles": np.load("data/hard_puzzle.npy"),
+                                 "solutions": np.load("data/hard_solution.npy")}}
 
     def solve_all(self):
-        self.solve_all_minus_hard()
-        self.time_solve(self.solve_hard)
+        self.time_solve(self.solve_and_time, "very_easy")
+        self.time_solve(self.solve_and_time, "easy")
+        self.time_solve(self.solve_and_time, "medium")
+        self.time_solve(self.solve_and_time, "hard")
 
-    def solve_all_minus_hard(self):
-        self.time_solve(self.solve_very_easy)
-        self.time_solve(self.solve_easy)
-        self.time_solve(self.solve_medium)
+    @staticmethod
+    def time_solve(func, var):
+        print(f"Average solve time for {func.__name__}: {func(var)}")
 
-    def solve_one_hard(self, choice=0):
-        solver = Solver(self._hard[choice])
-        assert_array_equal(self._hard_solutions[choice], solver.solve())
-
-    def time_solve(self, func):
-        print(f"Average solve time for {func.__name__}: {func()}")
-
-    def solve_very_easy(self):
+    def solve_and_time(self, difficulty):
         solve_times = []
-        for idx, puzzle in enumerate(self._v_easy):
+        for idx, puzzle in enumerate(self.puzzles[difficulty]["puzzles"]):
             t1 = time.time()
             solver = Solver(puzzle)
-            assert_array_equal(self._v_easy_solutions[idx], solver.solve())
+            assert_array_equal(self.puzzles[difficulty]["solutions"][idx],
+                               solver.solve())
             t2 = time.time()
             solve_time = t2 - t1
-            print(f"    Solve time for very easy {idx}: "
+            print(f"    Solve time for {difficulty} {idx}: "
                   f"{solve_time}")
-            solve_times.append(solve_time)
-        return sum(solve_times) / len(solve_times)
-
-    def solve_easy(self):
-        solve_times = []
-        for idx, puzzle in enumerate(self._easy):
-            t1 = time.time()
-            solver = Solver(puzzle)
-            assert_array_equal(self._easy_solutions[idx], solver.solve())
-            t2 = time.time()
-            solve_time = t2 - t1
-            print(f"    Solve time for easy {idx}: "
-                  f"{solve_time}")
-            solve_times.append(solve_time)
-        return sum(solve_times) / len(solve_times)
-
-    def solve_medium(self):
-        solve_times = []
-        for idx, puzzle in enumerate(self._medium):
-            t1 = time.time()
-            solver = Solver(puzzle)
-            assert_array_equal(self._medium_solutions[idx], solver.solve())
-            t2 = time.time()
-            solve_time = t2 - t1
-            print(f"    Solve time for medium {idx}: "
-                  f"{solve_time}")
-            solve_times.append(solve_time)
-        return sum(solve_times) / len(solve_times)
-
-    def solve_hard(self):
-        solve_times = []
-        for idx, puzzle in enumerate(self._hard):
-            t1 = time.time()
-            solver = Solver(puzzle)
-            assert_array_equal(self._hard_solutions[idx], solver.solve())
-            t2 = time.time()
-            solve_time = t2 - t1
-            print(f"    Solve time for hard {idx}: {solve_time}")
             solve_times.append(solve_time)
         return sum(solve_times) / len(solve_times)
 
