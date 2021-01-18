@@ -42,7 +42,7 @@ class Graph:
             vertexes.resolve_neighbours()
 
     def _link_all(self):
-        self._link()
+        self._link(axis=0)
         self._link(axis=1)
         self._link_sub_boxes()
 

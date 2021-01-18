@@ -51,12 +51,15 @@ class SudokuPuzzle:
             vertex.resolve_neighbours()
 
     def copy(self):
-        duplicate_puzzle = SudokuPuzzle(self._puzzle_array.copy(), init_graph=False)
+        duplicate_puzzle = SudokuPuzzle(self._puzzle_array, init_graph=False)
         duplicate_puzzle._graph = self._graph.copy()
         return duplicate_puzzle
 
     def is_solved(self):
-        return not (0 in self.get_values())
+        for vertex in self._graph.vertexes.values():
+            if vertex.get_known_value() == 0:
+                return False
+        return True
 
     def get_values(self):
         values_array = np.empty(shape=(self._size, self._size))
