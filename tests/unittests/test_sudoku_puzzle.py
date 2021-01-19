@@ -32,15 +32,6 @@ class TestSudokuPuzzle(TestCase):
         actual_array = self.puzzle.get_values()
         assert_array_equal(expected_array, actual_array)
 
-    def test_get_possible_values(self):
-        self.puzzle.set_value((0, 0),
-                              value=2)
-        self.puzzle.set_value((1, 2),
-                              value=2)
-        expected_dict = {(0, 0): {2}, (0, 1): {3}, (0, 2): {1, 4}, (0, 3): {1, 4}, (1, 0): {1, 4}, (1, 1): {1, 4}, (1, 2): {2}, (1, 3): {1, 3, 4}, (2, 0): {1, 3, 4}, (2, 1): {1, 2, 3, 4}, (2, 2): {1, 3, 4}, (2, 3): {1, 2, 3, 4}, (3, 0): {1, 3, 4}, (3, 1): {1, 2, 3, 4}, (3, 2): {1, 3, 4}, (3, 3): {1, 2, 3, 4}}
-        actual_dict = self.puzzle.get_possible_values()
-        self.assertEqual(expected_dict, actual_dict)
-
     def test_is_solved(self):
         self.assertEqual(False, self.puzzle.is_solved())
         self.puzzle._graph.vertexes = {(0, 0): Vertex([1], (0, 0), self.puzzle._graph),
@@ -68,13 +59,13 @@ class TestSudokuPuzzle(TestCase):
         self.puzzle.set_value((0, 0), value=4)
         self.puzzle.set_value((1, 1), value=1)
         self.puzzle.update_unknowns()
-        expected_moves = [{'distance': 2, 'index': (0, 2), 'value': 1}, {'distance': 2, 'index': (0, 2), 'value': 2}, {'distance': 3, 'index': (0, 3), 'value': 1}, {'distance': 3, 'index': (0, 3), 'value': 2}, {'distance': 6, 'index': (1, 2), 'value': 3}, {'distance': 6, 'index': (1, 2), 'value': 4}, {'distance': 7, 'index': (1, 3), 'value': 3}, {'distance': 7, 'index': (1, 3), 'value': 4}, {'distance': 8, 'index': (2, 0), 'value': 1}, {'distance': 8, 'index': (2, 0), 'value': 3}, {'distance': 9, 'index': (2, 1), 'value': 2}, {'distance': 9, 'index': (2, 1), 'value': 4}, {'distance': 10, 'index': (2, 2), 'value': 1}, {'distance': 10, 'index': (2, 2), 'value': 2}, {'distance': 10, 'index': (2, 2), 'value': 3}, {'distance': 10, 'index': (2, 2), 'value': 4}, {'distance': 11, 'index': (2, 3), 'value': 1}, {'distance': 11, 'index': (2, 3), 'value': 2}, {'distance': 11, 'index': (2, 3), 'value': 3}, {'distance': 11, 'index': (2, 3), 'value': 4}, {'distance': 12, 'index': (3, 0), 'value': 1}, {'distance': 12, 'index': (3, 0), 'value': 3}, {'distance': 13, 'index': (3, 1), 'value': 2}, {'distance': 13, 'index': (3, 1), 'value': 4}, {'distance': 14, 'index': (3, 2), 'value': 1}, {'distance': 14, 'index': (3, 2), 'value': 2}, {'distance': 14, 'index': (3, 2), 'value': 3}, {'distance': 14, 'index': (3, 2), 'value': 4}, {'distance': 15, 'index': (3, 3), 'value': 1}, {'distance': 15, 'index': (3, 3), 'value': 2}, {'distance': 15, 'index': (3, 3), 'value': 3}, {'distance': 15, 'index': (3, 3), 'value': 4}]
-        self.assertEqual(expected_moves, self.puzzle.get_all_possible_moves())
+        expected_moves = [{'distance': 2, 'index': (0, 2), 'known_value': 1}, {'distance': 2, 'index': (0, 2), 'known_value': 2}, {'distance': 3, 'index': (0, 3), 'known_value': 1}, {'distance': 3, 'index': (0, 3), 'known_value': 2}, {'distance': 6, 'index': (1, 2), 'known_value': 3}, {'distance': 6, 'index': (1, 2), 'known_value': 4}, {'distance': 7, 'index': (1, 3), 'known_value': 3}, {'distance': 7, 'index': (1, 3), 'known_value': 4}, {'distance': 8, 'index': (2, 0), 'known_value': 1}, {'distance': 8, 'index': (2, 0), 'known_value': 3}, {'distance': 9, 'index': (2, 1), 'known_value': 2}, {'distance': 9, 'index': (2, 1), 'known_value': 4}, {'distance': 10, 'index': (2, 2), 'known_value': 1}, {'distance': 10, 'index': (2, 2), 'known_value': 2}, {'distance': 10, 'index': (2, 2), 'known_value': 3}, {'distance': 10, 'index': (2, 2), 'known_value': 4}, {'distance': 11, 'index': (2, 3), 'known_value': 1}, {'distance': 11, 'index': (2, 3), 'known_value': 2}, {'distance': 11, 'index': (2, 3), 'known_value': 3}, {'distance': 11, 'index': (2, 3), 'known_value': 4}, {'distance': 12, 'index': (3, 0), 'known_value': 1}, {'distance': 12, 'index': (3, 0), 'known_value': 3}, {'distance': 13, 'index': (3, 1), 'known_value': 2}, {'distance': 13, 'index': (3, 1), 'known_value': 4}, {'distance': 14, 'index': (3, 2), 'known_value': 1}, {'distance': 14, 'index': (3, 2), 'known_value': 2}, {'distance': 14, 'index': (3, 2), 'known_value': 3}, {'distance': 14, 'index': (3, 2), 'known_value': 4}, {'distance': 15, 'index': (3, 3), 'known_value': 1}, {'distance': 15, 'index': (3, 3), 'known_value': 2}, {'distance': 15, 'index': (3, 3), 'known_value': 3}, {'distance': 15, 'index': (3, 3), 'known_value': 4}]
+        self.assertEqual(expected_moves, list(self.puzzle.yield_all_possible_moves()))
 
     def test_lowest_empty_cell(self):
         self.puzzle.set_value((0, 0), value=4)
         self.puzzle.set_value((1, 1), value=1)
-        self.assertEqual({"index": (0, 2), "distance": 2}, self.puzzle.lowest_empty_cell())
+        self.assertEqual(2, self.puzzle.lowest_empty_cell())
 
     def test_lowest_empty_cell_no_zeros(self):
 
@@ -123,7 +114,7 @@ class TestSudokuPuzzle(TestCase):
                                        ((0), (3)),
                                        ((2), (0)),
                                        ((3), (0))}
-        actual_neighbours = new_graph._graph.vertexes[(0, 0)].get_neighbours()
+        actual_neighbours = new_graph._graph.vertexes[(0, 0)].neighbours
         self.assertEqual(expected_neighbours_for_0_0, actual_neighbours)
 
     def test_init_values(self):

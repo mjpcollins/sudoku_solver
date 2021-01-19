@@ -28,18 +28,12 @@ class Solver:
     def _sub_solve_process(self, move):
         try:
             self._sudoku.update_unknowns()
-            self._sudoku.set_value(index=move["index"], value=move["value"])
+            self._sudoku.set_value(index=move["index"], value=move["known_value"])
             if self._sudoku.is_solved():
                 return self._sudoku.get_values()
             return self._depth_first_algo()
         except ValueError:
             return {-1}
-
-    def _good_moves(self):
-        lowest_empty = self._sudoku.lowest_empty_cell()["distance"]
-        for move in self._sudoku.get_all_possible_moves():
-            if lowest_empty >= move["distance"]:
-                yield move
 
     def _depth_first_algo(self):
         for move in self._good_moves():
@@ -49,3 +43,9 @@ class Solver:
             if -1 not in solution:
                 return solution
         return {-1}
+
+    def _good_moves(self):
+        lowest_empty = self._sudoku.lowest_empty_cell()
+        for move in self._sudoku.yield_all_possible_moves():
+            if lowest_empty >= move["distance"]:
+                yield move

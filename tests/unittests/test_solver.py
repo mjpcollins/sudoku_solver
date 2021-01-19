@@ -16,7 +16,6 @@ class TestSolver(TestCase):
                         "hard": {"puzzles": np.load("data/hard_puzzle.npy"),
                                  "solutions": np.load("data/hard_solution.npy")}}
         self.hard_sudoku = Solver(self.puzzles["hard"]["puzzles"][4])
-        self.hard_sudoku._init_puzzle()
 
     def test_solve_very_easy(self):
         self.solve("very_easy")
@@ -29,11 +28,6 @@ class TestSolver(TestCase):
 
     def test_solve_one_hard(self):
         assert_array_equal(self.hard_sudoku.solve(), self.puzzles["hard"]["solutions"][4])
-
-    def test_take_move(self):
-        self.assertEqual(0, self.hard_sudoku._sudoku.get_values()[0, 1])
-        self.hard_sudoku._take_move({"index": (0, 1), "value": 4})
-        self.assertEqual(4, self.hard_sudoku._sudoku.get_values()[0, 1])
 
     def solve(self, difficulty):
         for index, puzzle in enumerate(self.puzzles[difficulty]["puzzles"]):
