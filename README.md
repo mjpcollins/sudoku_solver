@@ -9,7 +9,7 @@ As these puzzles have been around for a long time, many techniques and algorithm
 
 One particularly interesting way of thinking about Sudoku puzzles is as a graph.
 
-This [Medium article by Ishaan Gupta](https://medium.com/code-science/sudoku-solver-graph-coloring-8f1b4df47072)
+[Ishaan Gupta (2020)](https://medium.com/code-science/sudoku-solver-graph-coloring-8f1b4df47072) 
 uses a graph abstraction of the Sudoku puzzle and applies a Graph Colouring algorithm to solve the puzzle.
 
 However, there are some issues with Ishaan Gupta's implementation:
