@@ -1,5 +1,5 @@
 # sudoku_solver
-Solver of Sudoku puzzles using a graph
+Project for an MSc AI course with Bath University. This is a Sudoku puzzle solver using a graph.
 
 ## Background & Inspiration
 
