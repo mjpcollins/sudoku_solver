@@ -14,8 +14,8 @@ uses a graph abstraction of the Sudoku puzzle and applies a Graph Colouring algo
 
 However, there are some issues with Ishaan Gupta's implementation:
 - Explicitly adding edges to the nodes and adding weights to the edges is a superfluous abstraction. We only care about
-    cells linking to other cells. Ideally vertexes know their neighbours, but do not keep track of edges, and
-- There is excessive hard coding and poor optimisation.
+    cells linking to other cells. Ideally vertexes know their neighbours, but do not keep track of edges
+- There is excessive hard coding and poor optimisation
 
 In addition, while the Graph Colouring algorithm Gupta implemented was interesting, I thought it might be possible
 to do slightly better by having the vertexes cascade updates rather than check every cell.
