@@ -27,8 +27,8 @@ class Solver:
 
     def _sub_solve_process(self, move):
         try:
-            self._sudoku.update_unknowns()
             self._sudoku.set_value(index=move["index"], value=move["known_value"])
+            self._sudoku.update_unknowns()
             if self._sudoku.is_solved():
                 return self._sudoku.get_values()
             return self._depth_first_algo()
