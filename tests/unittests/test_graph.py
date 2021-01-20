@@ -29,51 +29,6 @@ class TestGraph(TestCase):
         for vertex in self.graph.vertexes.values():
             self.assertEqual({1, 2, 3, 4}, vertex.possible_values)
 
-    # def test_link_rows(self):
-    #     import numpy as np
-    #     graph = self.get_unlinked_graph()
-    #     graph._link(axis=0)
-    #     for index, _ in np.ndenumerate(np.zeros(4, 4)):
-    #         print(index)
-
-    # def test_link_columns(self):
-    #     graph = self.get_unlinked_graph()
-    #     graph._link(axis=1)
-    #     for column in graph:
-    #         for cell in column:
-    #             expected_neighbours = set(column)
-    #             expected_neighbours.remove(cell)
-    #             self.assertEqual(expected_neighbours, cell.get_neighbours())
-    #
-    # def test_link_sub_boxes(self):
-    #     self.graph.vertex_array.flat = [Vertex(self._possible_cell_values) for _ in self.graph.vertex_array.flat]
-    #     self.graph._link_sub_boxes()
-    #     expected_neighbours = {self.graph.vertex_array[1][0],
-    #                            self.graph.vertex_array[1][1],
-    #                            self.graph.vertex_array[0][1]}
-    #     actual_neighbours = (self.graph.vertex_array[0][0].get_neighbours())
-    #     self.assertEqual(expected_neighbours, actual_neighbours)
-    #
-    # def test_link_all_in_set(self):
-    #     graph = self.get_unlinked_graph()
-    #     v1 = (1, 2)
-    #     v2 = (3, 2)
-    #     v3 = (2, 2)
-    #     graph._link_all_in_set({v1, v2, v3})
-    #     self.assertEqual({v2, v3}, graph.vertexes[v1].get_neighbours())
-    #     self.assertEqual({v1, v3}, graph.vertexes[v2].get_neighbours())
-    #     self.assertEqual({v1, v2}, graph.vertexes[v3].get_neighbours())
-    #
-    # def test_link_all(self):
-    #     self.graph.vertexes = {}
-    #     for vertex_id in itertools.product(range(self._size), range(self._size)):
-    #         self.graph.vertexes[vertex_id] = Vertex(self._possible_cell_values,
-    #                                                 vertex_id=vertex_id,
-    #                                                 graph=self.graph)
-    #     self.graph._link_all()
-    #     actual_neighbours = self.graph.vertexes[(0, 0)].get_neighbours()
-    #     self.assertEqual(self.expected_neighbours_for_0_0, actual_neighbours)
-
     def test_set_value(self):
         self.graph.set_value((0, 0), 3)
         self.assertEqual({3}, self.graph.vertexes[(0, 0)].possible_values)

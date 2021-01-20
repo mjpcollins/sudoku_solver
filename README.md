@@ -108,13 +108,15 @@ quite difficult to backtrack by undo-ing the previous move.
 ## How To Use
 
 Import the Solver from utils then start solving. Examples of Sudoku puzzles are stored in the data folder.
-Example usage of the Solver is located in utils/performace_test.py.
+Example usage of the Solver is located in example.py and utils/performace_test.py.
 
 Assuming your puzzle is an numpy array, solving is quite simple.
 
+    import numpy as np
     from utils import Solver
     
-    puzzle = np.load("data/very_easy_puzzle.npy")[6]  # Take the sixth puzzle in the list
+    puzzle = np.load("data/hard_puzzle.npy")[6]  # Take the sixth puzzle in the list
+    print(puzzle)
     solver = Solver(puzzle)
     solution = solver.solve()
     print(solution)
