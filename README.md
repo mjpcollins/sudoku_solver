@@ -40,7 +40,7 @@ setting, getting, and updating methods. There are also methods to generate a lis
 and the location of the first 0 value cell.
 
 #### utils/solver.py & Depth First Solving Method
-In the Solver class there is a depth first solving method. Interestingly for very easy, easy, and medium puzzles,
+In the Solver class there is a depth first solving method. For very easy, easy, and medium puzzles,
 no use of the depth first methods are required. Initialisation of the graph with puzzle inputs will cascade
 all of the constraints and solve them all in about the same length of time (between 0.002 seconds and 0.02 seconds).
 Averages were: 0.006 seconds for very easy, 0.007 seconds for easy, 0.006 seconds for medium.
