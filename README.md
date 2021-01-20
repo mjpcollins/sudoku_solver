@@ -81,7 +81,7 @@ and copies the underlying graph. The move is taken on this copied graph and an u
 values is performed. 
 
 To prevent the Solver from trying too many moves in an impossible puzzle it looks for "good moves". A "good move" 
-is a move than fills the first 0 value cell. If there are no moves that fill the first 0 value cell, then
+is a move that will fill the first 0 value cell. If there are no moves that fill the first 0 value cell, then
 the puzzle is impossible and we can quit early. 
 
 If the puzzle still isn't solved it repeats the depth first algo. If at any point
